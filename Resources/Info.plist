@@ -17,7 +17,7 @@
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>CFBundleDevelopmentRegion</key>
-	<string>de</string>
+	<string>en</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>26.0</string>
 	<key>LSApplicationCategoryType</key>
@@ -25,8 +25,8 @@
 	<key>NSHighResolutionCapable</key>
 	<true/>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>Promptcript hört zu, um dem gesprochenen Text im Skript zu folgen. Die Audiodaten bleiben auf deinem Mac.</string>
+	<string>Promptcript listens so it can follow your speech through the script. The audio never leaves your Mac.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>Promptcript erkennt deine Sprache, um den Teleprompter automatisch weiterzuscrollen.</string>
+	<string>Promptcript recognizes your speech to scroll the teleprompter automatically.</string>
 </dict>
 </plist>

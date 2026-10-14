@@ -1,40 +1,40 @@
 import Foundation
 
-/// Findet anhand der zuletzt gesprochenen Wörter die aktuelle Stelle im Skript.
+/// Finds the current position in the script based on the most recently spoken words.
 ///
-/// Verfahren: lokale Sequenz-Alignierung (Smith-Waterman) der letzten erkannten Wörter
-/// gegen ein Fenster des Skripts rund um die aktuelle Position. Dadurch toleriert der
-/// Abgleich falsch erkannte Wörter, ausgelassene Wörter, eingeschobene Füllwörter und
-/// zusammen- bzw. getrennt geschriebene Begriffe. Sprünge nach vorne sind leicht,
-/// Sprünge zurück und große Sprünge brauchen deutlich mehr Übereinstimmung.
+/// Method: local sequence alignment (Smith-Waterman) of the last recognized words
+/// against a window of the script around the current position. This lets the matcher
+/// tolerate misrecognized words, skipped words, inserted filler words and terms that
+/// are recognized as joined or split. Jumping forward is easy; jumping back and
+/// large jumps require considerably more agreement.
 public final class ScriptMatcher {
     public struct Configuration: Sendable {
-        /// Wie viele Wörter vor der aktuellen Position noch gesucht werden.
+        /// How many words before the current position are still searched.
         public var backWindow = 12
-        /// Wie viele Wörter nach der aktuellen Position gesucht werden.
+        /// How many words after the current position are searched.
         public var forwardWindow = 45
-        /// Wie viele der zuletzt gesprochenen Wörter verglichen werden.
+        /// How many of the most recently spoken words are compared.
         public var recentCount = 8
-        /// Ab dieser Ähnlichkeit gelten zwei Wörter als Treffer.
+        /// Two words count as a match from this similarity upward.
         public var matchThreshold = 0.72
-        /// Strengere Schwelle für zusammengefügte Wörter.
+        /// Stricter threshold for joined words.
         public var mergedThreshold = 0.85
         public var mismatchPenalty = -0.7
-        /// Gesprochenes Wort ohne Gegenstück im Skript (Füllwort, Versprecher, Improvisation).
+        /// Spoken word with no counterpart in the script (filler, slip of the tongue, ad-lib).
         public var extraSpokenPenalty = -0.6
-        /// Skriptwort, das nicht gesprochen bzw. nicht erkannt wurde.
+        /// Script word that was not spoken or not recognized.
         public var skippedScriptPenalty = -0.45
-        /// Mindestpunktzahl für einen normalen Schritt nach vorne (≈ zwei passende Wörter).
+        /// Minimum score for a normal step forward (≈ two matching words).
         public var minScore = 1.6
-        /// Ab so vielen Wörtern gilt ein Sprung nach vorne als „groß“.
+        /// A forward jump of at least this many words counts as "far".
         public var farJump = 15
         public var farJumpScore = 2.6
-        /// Mindestpunktzahl, um zurückzuspringen (z. B. wenn ein Satz neu begonnen wird).
+        /// Minimum score to jump back (e.g. when a sentence is restarted).
         public var backJumpScore = 3.0
-        /// Kleinere Rücksprünge werden ignoriert: Sie entstehen meist nur dadurch, dass die
-        /// Erkennung ein vorläufiges Ergebnis korrigiert, und würden die Anzeige flackern lassen.
+        /// Smaller backward jumps are ignored: they usually only happen because the recognizer
+        /// corrects a volatile result, and they would make the display flicker.
         public var minBackJump = 3
-        /// Bevorzugt bei gleich guten Treffern die Stelle nahe der aktuellen Position.
+        /// Among equally good matches, prefers the one closest to the current position.
         public var distancePenalty = 0.03
 
         public init() {}
@@ -42,10 +42,10 @@ public final class ScriptMatcher {
 
     public let words: [String]
     public let configuration: Configuration
-    /// Index des zuletzt gesprochenen Skriptworts, -1 vor dem ersten Wort.
+    /// Index of the last spoken script word, -1 before the first word.
     public private(set) var position: Int = -1
 
-    /// Index des als Nächstes zu lesenden Worts.
+    /// Index of the next word to be read.
     public var cursor: Int { position + 1 }
 
     public init(words: [String], configuration: Configuration = Configuration()) {
@@ -53,13 +53,13 @@ public final class ScriptMatcher {
         self.configuration = configuration
     }
 
-    /// Setzt die Position manuell, z. B. nach Pfeiltasten.
+    /// Sets the position manually, e.g. after arrow keys.
     public func reset(toCursor cursor: Int) {
         position = min(max(cursor, 0), words.count) - 1
     }
 
-    /// Gleicht die zuletzt gesprochenen (normalisierten) Wörter ab.
-    /// - Returns: `true`, wenn sich die Position geändert hat.
+    /// Matches the most recently spoken (normalized) words.
+    /// - Returns: `true` if the position changed.
     @discardableResult
     public func update(recentWords: [String]) -> Bool {
         let config = configuration
@@ -83,14 +83,14 @@ public final class ScriptMatcher {
                 best = max(best, h[i - 1][j - 1] + diagonal)
                 best = max(best, h[i - 1][j] + config.extraSpokenPenalty)
                 best = max(best, h[i][j - 1] + config.skippedScriptPenalty)
-                // Zwei Skriptwörter als ein erkanntes Wort („Teleprompter App“ → „teleprompterapp“).
+                // Two script words recognized as one word ("Teleprompter App" → "teleprompterapp").
                 if j >= 2 {
                     let merged = WordSimilarity.score(spoken[i - 1], window[j - 2] + window[j - 1], allowPrefix: false)
                     if merged >= config.mergedThreshold {
                         best = max(best, h[i - 1][j - 2] + 1.5 * merged)
                     }
                 }
-                // Ein Skriptwort als zwei erkannte Wörter („Livestream“ → „live stream“).
+                // One script word recognized as two words ("Livestream" → "live stream").
                 if i >= 2 {
                     let merged = WordSimilarity.score(spoken[i - 2] + spoken[i - 1], window[j - 1], allowPrefix: false)
                     if merged >= config.mergedThreshold {
@@ -128,7 +128,7 @@ public final class ScriptMatcher {
             required = config.minScore
         }
 
-        // Ein einzelnes, eindeutiges Wort genügt, wenn es unmittelbar folgt (z. B. ganz am Anfang).
+        // A single, unambiguous word is enough if it follows immediately (e.g. at the very start).
         let isNextWord = bestPosition > position && bestPosition - position <= 2
         let singleWordOK = isNextWord && bestScore >= 0.9 && words[bestPosition].count >= 4
 

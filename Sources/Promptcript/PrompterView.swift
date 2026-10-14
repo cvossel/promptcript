@@ -1,7 +1,7 @@
 import PromptcriptCore
 import SwiftUI
 
-/// Der eigentliche Prompter: die aktuelle Zeile plus einstellbar viele Zeilen davor und danach.
+/// The prompter itself: the current line plus a configurable number of lines before and after.
 struct PrompterView: View {
     @EnvironmentObject private var model: AppModel
 
@@ -17,7 +17,7 @@ struct PrompterView: View {
                 .fill(Color.black)
 
             if layout.lines.isEmpty {
-                Text("Kein Text – bitte im Editor ein Skript einfügen.")
+                Text("No text – please paste a script into the editor.")
                     .font(.system(size: 18))
                     .foregroundStyle(.gray)
             } else {
@@ -42,7 +42,7 @@ struct PrompterView: View {
         .contextMenu { contextMenu }
     }
 
-    /// Eine Zeile Puffer oben und unten, damit beim Scrollen Zeilen von außen hereingleiten.
+    /// One line of buffer above and below, so lines slide in from outside while scrolling.
     private func visibleRange(around current: Int, count: Int) -> [Int] {
         guard count > 0 else { return [] }
         let lower = max(0, current - model.linesBefore - 1)
@@ -112,7 +112,7 @@ struct PrompterView: View {
     private var statusMessage: String? {
         switch model.status {
         case .preparing(let message): message
-        case .paused: "Pausiert – Leertaste zum Fortsetzen"
+        case .paused: "Paused – press Space to resume"
         case .error(let message): message
         case .listening, .idle: nil
         }
@@ -120,27 +120,27 @@ struct PrompterView: View {
 
     private var statusHelp: String {
         switch model.status {
-        case .listening: "Hört zu. Zuletzt erkannt: \(model.lastHeard)"
+        case .listening: "Listening. Last heard: \(model.lastHeard)"
         default: statusMessage ?? ""
         }
     }
 
     @ViewBuilder
     private var contextMenu: some View {
-        Button(model.isPaused ? "Fortsetzen" : "Pause") { model.togglePause() }
-        Button("Eine Zeile vor") { model.moveLines(1) }
-        Button("Eine Zeile zurück") { model.moveLines(-1) }
-        Button("Zum Anfang") { model.restartFromBeginning() }
+        Button(model.isPaused ? "Resume" : "Pause") { model.togglePause() }
+        Button("Next Line") { model.moveLines(1) }
+        Button("Previous Line") { model.moveLines(-1) }
+        Button("Back to Start") { model.restartFromBeginning() }
         Divider()
-        Button("Schrift größer") { model.changeFontSize(by: 2) }
-        Button("Schrift kleiner") { model.changeFontSize(by: -2) }
-        Picker("Zeilen davor", selection: $model.linesBefore) {
+        Button("Larger Font") { model.changeFontSize(by: 2) }
+        Button("Smaller Font") { model.changeFontSize(by: -2) }
+        Picker("Lines Before", selection: $model.linesBefore) {
             ForEach(AppModel.contextLineRange, id: \.self) { Text("\($0)").tag($0) }
         }
-        Picker("Zeilen danach", selection: $model.linesAfter) {
+        Picker("Lines After", selection: $model.linesAfter) {
             ForEach(AppModel.contextLineRange, id: \.self) { Text("\($0)").tag($0) }
         }
         Divider()
-        Button("Prompter beenden") { model.stopPrompting() }
+        Button("Stop Prompter") { model.stopPrompting() }
     }
 }

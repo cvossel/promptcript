@@ -1,8 +1,8 @@
 import Testing
 @testable import PromptcriptCore
 
-/// Simuliert eine Spracherkennung, die Wort für Wort vorläufige Ergebnisse liefert
-/// und nach jedem Satzteil ein endgültiges Ergebnis.
+/// Simulates a speech recognizer that delivers volatile results word by word
+/// and a final result after each phrase.
 private struct Session {
     let matcher: ScriptMatcher
     var buffer = TranscriptBuffer()
@@ -12,7 +12,7 @@ private struct Session {
         matcher = ScriptMatcher(words: Script.parse(script).spokenWords)
     }
 
-    /// Spricht Wörter einzeln (vorläufig) und schließt das Segment am Ende ab.
+    /// Speaks words one at a time (volatile) and finalizes the segment at the end.
     mutating func say(_ text: String) {
         for word in text.split(separator: " ") {
             segment.append(String(word))
@@ -28,6 +28,8 @@ private struct Session {
     var words: [String] { matcher.words }
 }
 
+// The test scripts are intentionally German: they exercise German speech input
+// (umlauts, ß, German number words and filler words).
 private let text = """
 # Einleitung
 Hallo und willkommen zu meinem neuen Video über Teleprompter.
@@ -54,7 +56,7 @@ Am Ende gibt es noch einen kurzen Ausblick auf das Deployment.
     @Test func toleratesMisrecognizedWords() {
         var session = Session(text)
         session.say("Hallo und willkommen zu meinem neuen Video über Teleprompter")
-        // „SpeechAnalyzer“ und „Framework“ werden falsch erkannt.
+        // "SpeechAnalyzer" and "Framework" are misrecognized.
         session.say("Heute zeige ich euch wie man mit Sprach Erkennung automatisch scrollt")
         session.say("wir nutzen dafür das Frame Work Spiegel Analyse von Apple und ein bisschen Swift")
         #expect(session.words[session.cursor] == "am")

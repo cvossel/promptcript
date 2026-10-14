@@ -1,5 +1,5 @@
 #!/bin/bash
-# Baut Promptcript.app in ./build. Mit --open wird die App danach gestartet.
+# Builds Promptcript.app in ./build. With --open, the app is launched afterwards.
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -12,7 +12,7 @@ cp .build/release/Promptcript "$APP/Contents/MacOS/Promptcript"
 cp Resources/Info.plist "$APP/Contents/Info.plist"
 codesign --force --sign - "$APP"
 
-echo "Fertig: $APP"
+echo "Done: $APP"
 
 if [[ "${1:-}" == "--open" ]]; then
     open "$APP"

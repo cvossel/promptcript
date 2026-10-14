@@ -12,7 +12,7 @@ enum PromptLanguage: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .german: "Deutsch"
+        case .german: "German"
         case .english: "English"
         }
     }
@@ -35,7 +35,7 @@ enum PrompterStatus: Equatable {
 
 @MainActor
 final class AppModel: ObservableObject {
-    // MARK: Einstellungen (werden gespeichert)
+    // MARK: Settings (persisted)
 
     @Published var text: String {
         didSet { defaults.set(text, forKey: Keys.text) }
@@ -61,25 +61,25 @@ final class AppModel: ObservableObject {
     @Published var dimSpokenWords: Bool {
         didSet { defaults.set(dimSpokenWords, forKey: Keys.dimSpoken) }
     }
-    /// Wie viele Zeilen über der aktuellen Zeile angezeigt werden.
+    /// How many lines are shown above the current line.
     @Published var linesBefore: Int {
         didSet { defaults.set(linesBefore, forKey: Keys.linesBefore) }
     }
-    /// Wie viele Zeilen unter der aktuellen Zeile angezeigt werden (zum Vorauslesen).
+    /// How many lines are shown below the current line (for reading ahead).
     @Published var linesAfter: Int {
         didSet { defaults.set(linesAfter, forKey: Keys.linesAfter) }
     }
 
     static let contextLineRange = 0...8
 
-    // MARK: Prompter-Zustand
+    // MARK: Prompter state
 
     @Published private(set) var isPrompting = false
     @Published private(set) var status: PrompterStatus = .idle
     @Published private(set) var script = Script.empty
-    /// Index des als Nächstes zu lesenden Worts in `script.spokenWords`.
+    /// Index of the next word to be read in `script.spokenWords`.
     @Published private(set) var cursor = 0
-    /// Die zuletzt erkannten Wörter (zur Kontrolle im Prompter).
+    /// The most recently recognized words (shown in the prompter for reference).
     @Published private(set) var lastHeard = ""
 
     var isPaused: Bool { status == .paused }
@@ -105,7 +105,7 @@ final class AppModel: ObservableObject {
 
     init() {
         text = defaults.string(forKey: Keys.text) ?? AppModel.sampleText
-        language = PromptLanguage(rawValue: defaults.string(forKey: Keys.language) ?? "") ?? .german
+        language = PromptLanguage(rawValue: defaults.string(forKey: Keys.language) ?? "") ?? .english
         engineKind = EngineKind(rawValue: defaults.string(forKey: Keys.engine) ?? "") ?? .speechAnalyzer
         fontSize = defaults.object(forKey: Keys.fontSize) as? Double ?? 34
         prompterWidth = defaults.object(forKey: Keys.width) as? Double ?? 760
@@ -120,7 +120,7 @@ final class AppModel: ObservableObject {
 
     var lineHeight: Double { (fontSize * 1.32).rounded() }
     var verticalPadding: Double { (fontSize * 0.3).rounded() }
-    /// Anzahl der sichtbaren Zeilen: davor + aktuelle + danach.
+    /// Number of visible lines: before + current + after.
     var visibleLineCount: Int { linesBefore + 1 + linesAfter }
     var prompterHeight: Double { lineHeight * Double(visibleLineCount) + verticalPadding * 2 }
 
@@ -134,7 +134,7 @@ final class AppModel: ObservableObject {
         let fontSize: Double
     }
 
-    /// Zeilenumbruch des Skripts für die aktuelle Fensterbreite und Schriftgröße.
+    /// The script wrapped into lines for the current window width and font size.
     var layout: ScriptLayout {
         let key = LayoutKey(scriptVersion: scriptVersion, width: prompterWidth.rounded(), fontSize: fontSize)
         if let cachedLayout, cachedLayout.key == key { return cachedLayout.layout }
@@ -149,7 +149,7 @@ final class AppModel: ObservableObject {
         return layout
     }
 
-    // MARK: Steuerung
+    // MARK: Controls
 
     func startPrompting() {
         script = Script.parse(text)
@@ -185,7 +185,7 @@ final class AppModel: ObservableObject {
         }
     }
 
-    /// Verschiebt die Position manuell um ganze Zeilen (Pfeiltasten).
+    /// Moves the position manually by whole lines (arrow keys).
     func moveLines(_ delta: Int) {
         guard isPrompting, let target = layout.cursor(movingLinesFrom: cursor, by: delta) else { return }
         setCursor(target)
@@ -203,11 +203,11 @@ final class AppModel: ObservableObject {
     private func setCursor(_ newCursor: Int) {
         matcher.reset(toCursor: newCursor)
         cursor = matcher.cursor
-        // Alte Wörter sollen die neue Position nicht gleich wieder zurückziehen.
+        // Old words must not immediately pull the new position back.
         transcript.clear()
     }
 
-    // MARK: Spracherkennung
+    // MARK: Speech recognition
 
     private func restartEngine() {
         stopEngine()
@@ -219,7 +219,7 @@ final class AppModel: ObservableObject {
                 self.handle(event)
             }
         }
-        status = .preparing("Spracherkennung wird vorbereitet …")
+        status = .preparing("Preparing speech recognition …")
         let locale = language.locale
         let vocabulary = script.contextualVocabulary(limit: 100)
         Task {
@@ -261,7 +261,7 @@ final class AppModel: ObservableObject {
         }
     }
 
-    // MARK: Dateien
+    // MARK: Files
 
     func openFile() {
         let panel = NSOpenPanel()
@@ -278,7 +278,7 @@ final class AppModel: ObservableObject {
     func saveFile() {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [UTType(filenameExtension: "md") ?? .plainText]
-        panel.nameFieldStringValue = "Skript.md"
+        panel.nameFieldStringValue = "Script.md"
         guard panel.runModal() == .OK, let url = panel.url else { return }
         do {
             try text.write(to: url, atomically: true, encoding: .utf8)
@@ -288,11 +288,11 @@ final class AppModel: ObservableObject {
     }
 
     static let sampleText = """
-    # Willkommen bei Promptcript
-    Füge hier dein Skript ein. Markdown geht auch: **fett**, *kursiv* und Überschriften.
-    Überschriften werden angezeigt, aber nicht als gesprochener Text erwartet.
-    Drück auf Play und fang einfach an zu lesen. Der Prompter folgt deiner Stimme.
-    Wenn du dich versprichst oder ein Wort auslässt, ist das kein Problem.
-    Mit den Pfeiltasten kannst du jederzeit von Hand eine Zeile vor oder zurück springen.
+    # Welcome to Promptcript
+    Paste your script here. Markdown works too: **bold**, *italic* and headings.
+    Headings are displayed, but they are not expected to be spoken.
+    Press Play and just start reading. The prompter follows your voice.
+    If you misspeak or skip a word, that is no problem.
+    Use the arrow keys to jump one line forward or back by hand at any time.
     """
 }

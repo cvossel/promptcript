@@ -1,24 +1,24 @@
 import SwiftUI
 
-/// Einstellungen (⌘,): Darstellung des Prompters.
+/// Settings (⌘,): prompter appearance.
 struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
 
     var body: some View {
         Form {
-            Section("Sichtbare Zeilen") {
+            Section("Visible Lines") {
                 Stepper(value: $model.linesBefore, in: AppModel.contextLineRange) {
-                    LabeledContent("Zeilen davor", value: "\(model.linesBefore)")
+                    LabeledContent("Lines before", value: "\(model.linesBefore)")
                 }
-                .help("Bereits gelesene Zeilen über der aktuellen Zeile")
+                .help("Already read lines above the current line")
                 Stepper(value: $model.linesAfter, in: AppModel.contextLineRange) {
-                    LabeledContent("Zeilen danach", value: "\(model.linesAfter)")
+                    LabeledContent("Lines after", value: "\(model.linesAfter)")
                 }
-                .help("Kommende Zeilen unter der aktuellen Zeile, zum Vorauslesen")
+                .help("Upcoming lines below the current line, for reading ahead")
             }
 
-            Section("Schrift") {
-                LabeledContent("Größe") {
+            Section("Font") {
+                LabeledContent("Size") {
                     HStack {
                         Slider(value: $model.fontSize, in: 16...96, step: 1)
                         Text("\(Int(model.fontSize)) pt")
@@ -26,7 +26,7 @@ struct SettingsView: View {
                             .frame(width: 44, alignment: .trailing)
                     }
                 }
-                Toggle("Gesprochenes abdunkeln", isOn: $model.dimSpokenWords)
+                Toggle("Dim spoken words", isOn: $model.dimSpokenWords)
             }
         }
         .formStyle(.grouped)

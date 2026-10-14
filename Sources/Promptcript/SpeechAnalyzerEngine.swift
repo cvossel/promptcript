@@ -2,8 +2,8 @@ import AVFoundation
 import Foundation
 import Speech
 
-/// Spracherkennung mit Apples `SpeechAnalyzer`/`SpeechTranscriber` (macOS 26).
-/// Läuft komplett auf dem Gerät und liefert schnelle vorläufige Ergebnisse.
+/// Speech recognition with Apple's `SpeechAnalyzer`/`SpeechTranscriber` (macOS 26).
+/// Runs entirely on device and delivers fast volatile results.
 final class SpeechAnalyzerEngine: SpeechEngine {
     var onEvent: ((SpeechEvent) -> Void)?
 
@@ -17,10 +17,10 @@ final class SpeechAnalyzerEngine: SpeechEngine {
         try await requestMicrophoneAccess()
 
         guard SpeechTranscriber.isAvailable else {
-            throw SpeechEngineError(message: "SpeechAnalyzer ist auf diesem Mac nicht verfügbar. Bitte im Menü „Prompter“ die klassische Erkennung wählen.")
+            throw SpeechEngineError(message: "SpeechAnalyzer is not available on this Mac. Please choose the classic recognizer in the Prompter menu.")
         }
         guard let supportedLocale = await SpeechTranscriber.supportedLocale(equivalentTo: locale) else {
-            throw SpeechEngineError(message: "Die Sprache \(locale.identifier) wird von SpeechAnalyzer nicht unterstützt.")
+            throw SpeechEngineError(message: "The language \(locale.identifier) is not supported by SpeechAnalyzer.")
         }
 
         let transcriber = SpeechTranscriber(
@@ -31,7 +31,7 @@ final class SpeechAnalyzerEngine: SpeechEngine {
         )
 
         if let request = try await AssetInventory.assetInstallationRequest(supporting: [transcriber]) {
-            onEvent?(.status("Sprachmodell wird heruntergeladen …"))
+            onEvent?(.status("Downloading speech model …"))
             try await request.downloadAndInstall()
         }
 
@@ -42,15 +42,15 @@ final class SpeechAnalyzerEngine: SpeechEngine {
         self.analyzer = analyzer
 
         guard let analyzerFormat = await SpeechAnalyzer.bestAvailableAudioFormat(compatibleWith: [transcriber]) else {
-            throw SpeechEngineError(message: "Kein passendes Audioformat für die Spracherkennung gefunden.")
+            throw SpeechEngineError(message: "No suitable audio format found for speech recognition.")
         }
-        onEvent?(.status("Sprachmodell wird geladen …"))
+        onEvent?(.status("Loading speech model …"))
         try await analyzer.prepareToAnalyze(in: analyzerFormat)
 
         if !contextualStrings.isEmpty {
             let context = AnalysisContext()
             context.contextualStrings[.general] = contextualStrings
-            // Nicht jedes Modell unterstützt Vokabelhinweise – dann eben ohne.
+            // Not every model supports vocabulary hints – in that case, do without.
             try? await analyzer.setContext(context)
         }
 
@@ -65,7 +65,7 @@ final class SpeechAnalyzerEngine: SpeechEngine {
                 }
             } catch {
                 guard let self, !self.isStopped else { return }
-                self.onEvent?(.error("Spracherkennung abgebrochen: \(error.localizedDescription)"))
+                self.onEvent?(.error("Speech recognition stopped: \(error.localizedDescription)"))
             }
         }
 
@@ -77,7 +77,7 @@ final class SpeechAnalyzerEngine: SpeechEngine {
         let inputNode = audioEngine.inputNode
         let inputFormat = inputNode.outputFormat(forBus: 0)
         guard inputFormat.sampleRate > 0, inputFormat.channelCount > 0 else {
-            throw SpeechEngineError(message: "Kein Mikrofon gefunden.")
+            throw SpeechEngineError(message: "No microphone found.")
         }
         let converter = try AudioBufferConverter(from: inputFormat, to: analyzerFormat)
 

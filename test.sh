@@ -1,6 +1,6 @@
 #!/bin/bash
-# Führt die Tests aus. Mit installiertem Xcode reicht `swift test`; mit den
-# Command Line Tools allein muss der Pfad zum Swift-Testing-Framework mitgegeben werden.
+# Runs the tests. With Xcode installed, `swift test` is enough; with only the
+# Command Line Tools, the path to the Swift Testing framework has to be passed in.
 set -euo pipefail
 cd "$(dirname "$0")"
 

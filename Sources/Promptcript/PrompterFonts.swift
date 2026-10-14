@@ -1,8 +1,8 @@
 import AppKit
 import PromptcriptCore
 
-/// Schriften des Prompters. Dieselben NSFonts werden zum Messen (Zeilenumbruch)
-/// und zum Zeichnen verwendet, damit beides exakt zusammenpasst.
+/// Prompter fonts. The same NSFonts are used for measuring (line wrapping)
+/// and for drawing, so that both match exactly.
 struct PrompterFonts {
     let size: Double
 

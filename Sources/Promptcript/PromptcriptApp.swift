@@ -26,14 +26,14 @@ struct PromptcriptCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .newItem) {
-            Button("Öffnen …") { model.openFile() }
+            Button("Open …") { model.openFile() }
                 .keyboardShortcut("o")
-            Button("Sichern unter …") { model.saveFile() }
+            Button("Save As …") { model.saveFile() }
                 .keyboardShortcut("s")
         }
 
-        CommandMenu("Sprache") {
-            Picker("Sprache", selection: $model.language) {
+        CommandMenu("Language") {
+            Picker("Language", selection: $model.language) {
                 ForEach(PromptLanguage.allCases) { language in
                     Text(language.title).tag(language)
                 }
@@ -43,21 +43,21 @@ struct PromptcriptCommands: Commands {
         }
 
         CommandMenu("Prompter") {
-            Button(model.isPrompting ? "Neu starten" : "Starten") { model.startPrompting() }
+            Button(model.isPrompting ? "Restart" : "Start") { model.startPrompting() }
                 .keyboardShortcut(.return, modifiers: .command)
-            Button(model.isPaused ? "Fortsetzen" : "Pause") { model.togglePause() }
+            Button(model.isPaused ? "Resume" : "Pause") { model.togglePause() }
                 .disabled(!model.isPrompting)
-            Button("Beenden") { model.stopPrompting() }
-                .disabled(!model.isPrompting)
-            Divider()
-            Button("Eine Zeile vor") { model.moveLines(1) }
-                .disabled(!model.isPrompting)
-            Button("Eine Zeile zurück") { model.moveLines(-1) }
-                .disabled(!model.isPrompting)
-            Button("Zum Anfang") { model.restartFromBeginning() }
+            Button("Stop") { model.stopPrompting() }
                 .disabled(!model.isPrompting)
             Divider()
-            Picker("Spracherkennung", selection: $model.engineKind) {
+            Button("Next Line") { model.moveLines(1) }
+                .disabled(!model.isPrompting)
+            Button("Previous Line") { model.moveLines(-1) }
+                .disabled(!model.isPrompting)
+            Button("Back to Start") { model.restartFromBeginning() }
+                .disabled(!model.isPrompting)
+            Divider()
+            Picker("Speech Recognition", selection: $model.engineKind) {
                 ForEach(EngineKind.allCases) { kind in
                     Text(kind.title).tag(kind)
                 }

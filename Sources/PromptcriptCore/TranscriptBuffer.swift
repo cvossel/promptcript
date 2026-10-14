@@ -1,7 +1,7 @@
 import Foundation
 
-/// Sammelt die Ausgabe der Spracherkennung: endgültige Ergebnisse werden angehängt,
-/// vorläufige („volatile“) Ergebnisse ersetzen sich laufend gegenseitig.
+/// Collects speech recognition output: final results are appended,
+/// volatile results keep replacing each other.
 public struct TranscriptBuffer: Sendable {
     public private(set) var finalized: [String] = []
     public private(set) var volatile: [String] = []
@@ -27,7 +27,7 @@ public struct TranscriptBuffer: Sendable {
         volatile = []
     }
 
-    /// Die zuletzt gesprochenen Wörter, älteste zuerst.
+    /// The most recently spoken words, oldest first.
     public var recentWords: [String] {
         Array((finalized + volatile).suffix(capacity))
     }

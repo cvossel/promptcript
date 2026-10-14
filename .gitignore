@@ -3,7 +3,7 @@
 .swiftpm/
 /Packages
 
-# Eigener App-Build (build.sh)
+# App bundle built by build.sh
 build/
 
 # Xcode
@@ -19,18 +19,18 @@ xcuserdata/
 .Spotlight-V100
 .Trashes
 
-# Editoren
+# Editors
 .vscode/
 .idea/
 *.swp
 *~
 
-# Lokale Konfiguration / Geheimnisse
+# Local configuration / secrets
 .env
 .env.*
 *.local
 
-# Testaufnahmen für PromptcriptBench
+# Test recordings for PromptcriptBench
 *.wav
 *.m4a
 *.caf

@@ -1,23 +1,23 @@
 import AVFoundation
 import Foundation
 
-/// Was eine Spracherkennung an die App meldet.
+/// What a speech recognizer reports to the app.
 enum SpeechEvent {
-    /// Vorläufiger Text, wird vom nächsten vorläufigen oder endgültigen Ergebnis ersetzt.
+    /// Volatile text, replaced by the next volatile or final result.
     case volatile(String)
-    /// Endgültiger Text eines Abschnitts.
+    /// Final text of a segment.
     case final(String)
-    /// Hinweis zum Fortschritt, z. B. „Sprachmodell wird geladen“.
+    /// Progress note, e.g. "Loading speech model".
     case status(String)
     case error(String)
 }
 
-/// Austauschbare Spracherkennung. Neue Engines (z. B. WhisperKit) müssen nur dieses Protokoll erfüllen
-/// und in `EngineKind` eingetragen werden.
+/// Pluggable speech recognition. New engines (e.g. WhisperKit) only need to conform to this protocol
+/// and be added to `EngineKind`.
 protocol SpeechEngine: AnyObject {
-    /// Wird von beliebigen Threads aufgerufen.
+    /// Called from arbitrary threads.
     var onEvent: ((SpeechEvent) -> Void)? { get set }
-    /// Startet Mikrofon und Erkennung. `contextualStrings` sind Vokabelhinweise (Fachbegriffe aus dem Skript).
+    /// Starts the microphone and recognition. `contextualStrings` are vocabulary hints (technical terms from the script).
     func start(locale: Locale, contextualStrings: [String]) async throws
     func setPaused(_ paused: Bool)
     func stop() async
@@ -31,8 +31,8 @@ enum EngineKind: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .speechAnalyzer: "Apple SpeechAnalyzer (empfohlen)"
-        case .dictation: "Apple Diktat (klassisch)"
+        case .speechAnalyzer: "Apple SpeechAnalyzer (recommended)"
+        case .dictation: "Apple Dictation (classic)"
         }
     }
 
@@ -49,7 +49,7 @@ struct SpeechEngineError: LocalizedError {
     var errorDescription: String? { message }
 }
 
-/// Fragt die Mikrofonberechtigung an.
+/// Requests microphone permission.
 func requestMicrophoneAccess() async throws {
     switch AVCaptureDevice.authorizationStatus(for: .audio) {
     case .authorized:
@@ -59,17 +59,17 @@ func requestMicrophoneAccess() async throws {
     default:
         break
     }
-    throw SpeechEngineError(message: "Kein Zugriff aufs Mikrofon. Bitte in Systemeinstellungen → Datenschutz & Sicherheit → Mikrofon erlauben.")
+    throw SpeechEngineError(message: "No access to the microphone. Please allow it in System Settings → Privacy & Security → Microphone.")
 }
 
-/// Wandelt Mikrofonpuffer in das Format, das die Erkennung erwartet.
+/// Converts microphone buffers into the format the recognizer expects.
 final class AudioBufferConverter {
     private let converter: AVAudioConverter
     private let outputFormat: AVAudioFormat
 
     init(from input: AVAudioFormat, to output: AVAudioFormat) throws {
         guard let converter = AVAudioConverter(from: input, to: output) else {
-            throw SpeechEngineError(message: "Audioformat des Mikrofons wird nicht unterstützt.")
+            throw SpeechEngineError(message: "The microphone's audio format is not supported.")
         }
         converter.primeMethod = .none
         self.converter = converter

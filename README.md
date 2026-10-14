@@ -1,70 +1,70 @@
 # Promptcript
 
-Ein Teleprompter für macOS, der deiner Stimme folgt. Er zeigt die Zeile, die du gerade liest,
-und darüber bzw. darunter einstellbar viele weitere Zeilen (Standard: je eine). Die Spracherkennung läuft komplett auf dem Mac.
+A teleprompter for macOS that follows your voice. It shows the line you are currently reading,
+plus a configurable number of lines above and below it (default: one each). Speech recognition runs entirely on your Mac.
 
-## Bauen und starten
+## Build and run
 
 ```bash
 ./build.sh --open
 ```
 
-Die App liegt danach in `build/Promptcript.app` und kann in den Programme-Ordner gezogen werden.
-Beim ersten Start fragt macOS nach dem Mikrofon. Beim ersten Play wird außerdem einmalig das
-Sprachmodell geladen.
+The app is then located at `build/Promptcript.app` and can be dragged into the Applications folder.
+On first launch, macOS asks for microphone access. The first time you press Play, the speech
+model is also loaded once.
 
-Voraussetzungen: macOS 26 und die Xcode Command Line Tools (`xcode-select --install`).
+Requirements: macOS 26 and the Xcode Command Line Tools (`xcode-select --install`).
 
-## Bedienung
+## Usage
 
-1. Text in den Editor kopieren (Markdown geht: `**fett**`, `*kursiv*`, `# Überschrift`, Listen).
-2. Sprache wählen: unten im Fenster oder im Menü **Sprache**.
-3. **Play** (⌘↩) öffnet den Prompter oben mittig unter der Kamera.
-4. Lesen. Der Prompter scrollt mit.
+1. Paste your text into the editor (Markdown works: `**bold**`, `*italic*`, `# Heading`, lists).
+2. Pick a language: at the bottom of the window or in the **Language** menu.
+3. **Play** (⌘↩) opens the prompter at the top center, right below the camera.
+4. Read. The prompter scrolls along.
 
-Überschriften werden angezeigt, aber nicht als gesprochener Text erwartet. Gut für Kapitelmarken.
+Headings are displayed, but they are not expected to be spoken. Useful as chapter markers.
 
-Im Prompter-Fenster:
+In the prompter window:
 
-| Taste           | Aktion                       |
+| Key             | Action                       |
 | --------------- | ---------------------------- |
-| Leertaste       | Pause / Weiter               |
-| ↓ / →           | eine Zeile vor               |
-| ↑ / ←           | eine Zeile zurück            |
-| + / −           | Schrift größer / kleiner     |
-| 0               | zurück zum Anfang            |
-| Esc             | Prompter beenden             |
+| Space           | Pause / Resume               |
+| ↓ / →           | Next line                    |
+| ↑ / ←           | Previous line                |
+| + / −           | Larger / smaller font        |
+| 0               | Back to start                |
+| Esc             | Stop prompter                |
 
-In den **Einstellungen** (⌘, oder Zahnrad im Editor) legst du fest, wie viele Zeilen vor und nach
-der aktuellen Zeile angezeigt werden (jeweils 0–8). Mehr Zeilen danach helfen beim Vorauslesen,
-wenn die Erkennung mal hinterherhängt. Das geht auch live über das Rechtsklick-Menü im Prompter.
+In **Settings** (⌘, or the gear icon in the editor) you set how many lines are shown before and
+after the current line (0–8 each). More lines after help you read ahead when recognition
+lags behind. You can also change this live via the prompter's right-click menu.
 
-Das Fenster lässt sich überall anfassen und verschieben, an den Rändern in der Breite ändern
-und merkt sich die Position. Rechtsklick öffnet ein Menü. Der Punkt oben rechts zeigt den Status
-(grün = hört zu, gelb = lädt/pausiert, rot = Fehler).
+The window can be grabbed and moved anywhere, resized in width at its edges,
+and remembers its position. Right-click opens a menu. The dot in the top right shows the status
+(green = listening, yellow = loading/paused, red = error).
 
-Der Prompter ist bei Bildschirmaufnahmen absichtlich unsichtbar, damit er nicht im Video landet.
+The prompter is intentionally invisible in screen recordings, so it does not end up in your video.
 
-## Wie das Mitlesen funktioniert
+## How tracking works
 
-- **Spracherkennung:** Apples `SpeechAnalyzer` (macOS 26). Im Menü **Prompter → Spracherkennung**
-  kann man auf die klassische Apple-Erkennung umschalten. Weitere Engines (z. B. WhisperKit)
-  lassen sich über das Protokoll `SpeechEngine` ergänzen.
-- **Fachbegriffe:** Wörter aus dem Skript, die nach Fachbegriffen aussehen (CamelCase, Abkürzungen,
-  englisch wirkende Wörter), werden der Erkennung als Vokabelhinweise mitgegeben.
-- **Abgleich** (`ScriptMatcher`): Die letzten acht erkannten Wörter werden unscharf gegen den Text
-  rund um die aktuelle Stelle abgeglichen (Smith-Waterman-Alignment). Das toleriert falsch erkannte
-  Wörter, Füllwörter, ausgelassene Wörter, Abschweifungen und getrennt bzw. zusammengeschrieben
-  erkannte Begriffe. Nach vorne springt der Prompter leicht, zurück nur bei deutlicher Übereinstimmung,
-  z. B. wenn du einen Satz neu beginnst.
+- **Speech recognition:** Apple's `SpeechAnalyzer` (macOS 26). In the **Prompter → Speech Recognition**
+  menu you can switch to Apple's classic recognizer. Additional engines (e.g. WhisperKit)
+  can be added via the `SpeechEngine` protocol.
+- **Technical terms:** Words from the script that look like technical terms (CamelCase, abbreviations,
+  English-looking words) are passed to the recognizer as vocabulary hints.
+- **Matching** (`ScriptMatcher`): The last eight recognized words are fuzzily matched against the text
+  around the current position (Smith-Waterman alignment). This tolerates misrecognized
+  words, filler words, skipped words, digressions, and terms recognized as split or joined.
+  The prompter jumps forward easily, but only jumps back on a clear match,
+  e.g. when you restart a sentence.
 
-## Entwicklung
+## Development
 
 ```bash
-./test.sh                                                  # Tests
-swift run PromptcriptBench skript.md aufnahme.aiff de-DE   # Audiodatei durch Erkennung + Abgleich schicken
+./test.sh                                                     # Tests
+swift run PromptcriptBench script.md recording.aiff de-DE     # Run an audio file through recognition + matching
 ```
 
-Testaufnahmen lassen sich z. B. mit `say -v Anna -o test.aiff "…"` erzeugen.
-Mit `PromptcriptBench` kann man die Fehlertoleranz ohne Mikrofon prüfen und die Werte in
-`ScriptMatcher.Configuration` anpassen.
+Test recordings can be created with e.g. `say -v Samantha -o test.aiff "…"` (or `say -v Anna` for German).
+`PromptcriptBench` lets you check error tolerance without a microphone and tune the values in
+`ScriptMatcher.Configuration`.

@@ -1,7 +1,8 @@
 import Foundation
 
-/// Bringt Skript-Text und erkannten Text in eine gemeinsame, vergleichbare Form:
-/// Kleinschreibung, ohne Akzente/Umlaute, ohne Satzzeichen, Zahlwörter als Ziffern.
+/// Brings script text and recognized text into a common, comparable form:
+/// lowercase, without accents/umlauts, without punctuation, number words as digits.
+/// German and English number words are supported.
 public enum TextNormalizer {
     static let numberWords: [String: String] = [
         "null": "0", "zero": "0",
@@ -19,8 +20,8 @@ public enum TextNormalizer {
         "zwolf": "12", "twelve": "12",
     ]
 
-    /// Zerlegt Text in normalisierte Wörter. Bindestriche, Apostrophe usw. trennen Wörter,
-    /// damit z. B. „Teleprompter-App“ und „Teleprompter App“ gleich behandelt werden.
+    /// Splits text into normalized words. Hyphens, apostrophes etc. separate words,
+    /// so that e.g. "Teleprompter-App" and "Teleprompter App" are treated the same.
     public static func words(in text: String) -> [String] {
         let folded = text
             .replacingOccurrences(of: "ß", with: "ss")
@@ -47,20 +48,20 @@ public enum TextNormalizer {
     }
 }
 
-/// Ähnlichkeit zweier normalisierter Wörter zwischen 0 und 1.
+/// Similarity of two normalized words, between 0 and 1.
 public enum WordSimilarity {
-    /// - Parameter allowPrefix: Beugungen/Komposita über gemeinsamen Wortanfang großzügig werten.
-    ///   Beim Vergleich zusammengefügter Wörter muss das aus sein, sonst passt „hallo“ auf „hallo“+„und“.
+    /// - Parameter allowPrefix: Rate inflections/compounds generously via a shared word start.
+    ///   Must be off when comparing joined words, otherwise "hallo" would match "hallo"+"und".
     public static func score(_ a: String, _ b: String, allowPrefix: Bool = true) -> Double {
         if a == b { return 1 }
         let la = a.count
         let lb = b.count
         let shorter = min(la, lb)
-        // Kurze Wörter („und“, „die“, „it“) müssen exakt passen, sonst gibt es zu viele Zufallstreffer.
+        // Short words ("und", "die", "it") must match exactly, otherwise there are too many accidental matches.
         if shorter <= 3 { return 0 }
         let distance = levenshtein(Array(a), Array(b))
         var similarity = 1 - Double(distance) / Double(max(la, lb))
-        // Beugungen und Komposita („Prompter“ ↔ „Promptern“, „Teleprompter“ ↔ „Teleprompterapp“).
+        // Inflections and compounds ("Prompter" ↔ "Promptern", "Teleprompter" ↔ "Teleprompterapp").
         if allowPrefix, shorter >= 5, a.hasPrefix(b) || b.hasPrefix(a) {
             similarity = max(similarity, 0.78)
         }

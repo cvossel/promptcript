@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Hauptfenster: Skript einfügen, Sprache wählen, Play drücken.
+/// Main window: paste a script, pick a language, press Play.
 struct EditorView: View {
     @EnvironmentObject private var model: AppModel
 
@@ -15,7 +15,7 @@ struct EditorView: View {
             Divider()
 
             HStack(spacing: 18) {
-                Picker("Sprache", selection: $model.language) {
+                Picker("Language", selection: $model.language) {
                     ForEach(PromptLanguage.allCases) { language in
                         Text(language.title).tag(language)
                     }
@@ -23,7 +23,7 @@ struct EditorView: View {
                 .pickerStyle(.segmented)
                 .labelsHidden()
                 .frame(width: 180)
-                .help("Sprache der Spracherkennung")
+                .help("Speech recognition language")
 
                 HStack(spacing: 6) {
                     Image(systemName: "textformat.size.smaller")
@@ -32,32 +32,32 @@ struct EditorView: View {
                     Image(systemName: "textformat.size.larger")
                 }
                 .foregroundStyle(.secondary)
-                .help("Schriftgröße im Prompter")
+                .help("Prompter font size")
 
-                Toggle("Gesprochenes abdunkeln", isOn: $model.dimSpokenWords)
+                Toggle("Dim spoken words", isOn: $model.dimSpokenWords)
                     .toggleStyle(.checkbox)
 
                 SettingsLink {
                     Image(systemName: "gearshape")
                 }
-                .help("Einstellungen (⌘,)")
+                .help("Settings (⌘,)")
 
                 Spacer()
 
                 if model.isPrompting {
-                    Button("Stopp") { model.stopPrompting() }
+                    Button("Stop") { model.stopPrompting() }
                         .keyboardShortcut(.escape, modifiers: [])
                 }
                 Button {
                     model.startPrompting()
                 } label: {
-                    Label(model.isPrompting ? "Neu starten" : "Play", systemImage: "play.fill")
+                    Label(model.isPrompting ? "Restart" : "Play", systemImage: "play.fill")
                         .padding(.horizontal, 6)
                 }
                 .buttonStyle(.borderedProminent)
                 .controlSize(.large)
                 .keyboardShortcut(.return, modifiers: .command)
-                .help("Prompter starten (⌘↩)")
+                .help("Start prompter (⌘↩)")
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)

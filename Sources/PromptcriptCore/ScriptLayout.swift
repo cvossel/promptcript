@@ -1,11 +1,11 @@
 import Foundation
 
-/// Eine Bildschirmzeile im Prompter.
+/// One on-screen line in the prompter.
 public struct DisplayLine: Hashable, Sendable {
     public let kind: BlockKind
     public let tokens: [ScriptToken]
 
-    /// Bereich der gesprochenen Wörter in dieser Zeile, `nil` wenn die Zeile nichts Gesprochenes enthält.
+    /// Range of spoken words in this line, `nil` if the line contains nothing spoken.
     public var spokenRange: Range<Int>? {
         let ranges = tokens.map(\.spokenRange).filter { !$0.isEmpty }
         guard let first = ranges.first, let last = ranges.last else { return nil }
@@ -13,16 +13,16 @@ public struct DisplayLine: Hashable, Sendable {
     }
 }
 
-/// Bricht das Skript für eine gegebene Breite in Zeilen um und beantwortet,
-/// in welcher Zeile ein gesprochenes Wort steht.
+/// Wraps the script into lines for a given width and answers
+/// which line a spoken word is on.
 public struct ScriptLayout: Sendable {
     public let lines: [DisplayLine]
-    /// Für jedes gesprochene Wort der Index der Zeile, in der es steht.
+    /// For each spoken word, the index of the line it is on.
     private let lineForSpoken: [Int]
 
     /// - Parameters:
-    ///   - measure: Breite eines Tokens in Punkten (abhängig von Stil und Blockart).
-    ///   - spaceWidth: Breite eines Leerzeichens für die Blockart.
+    ///   - measure: Width of a token in points (depends on style and block kind).
+    ///   - spaceWidth: Width of a space for the block kind.
     public init(
         script: Script,
         maxWidth: Double,
@@ -63,16 +63,16 @@ public struct ScriptLayout: Sendable {
         self.lineForSpoken = mapping
     }
 
-    /// Zeile, in der das als Nächstes zu lesende Wort steht.
-    /// Ist das Skript zu Ende gelesen, bleibt die letzte Zeile stehen.
+    /// The line containing the next word to be read.
+    /// Once the script has been read to the end, the last line stays in place.
     public func lineIndex(forCursor cursor: Int) -> Int {
         guard !lineForSpoken.isEmpty else { return 0 }
         let clamped = min(max(cursor, 0), lineForSpoken.count - 1)
         return lineForSpoken[clamped]
     }
 
-    /// Cursor (erstes gesprochenes Wort) der Zeile `lineIndex(forCursor:) + delta`.
-    /// Zeilen ohne gesprochene Wörter (Überschriften) werden übersprungen.
+    /// Cursor (first spoken word) of the line `lineIndex(forCursor:) + delta`.
+    /// Lines without spoken words (headings) are skipped.
     public func cursor(movingLinesFrom cursor: Int, by delta: Int) -> Int? {
         guard !lines.isEmpty, delta != 0 else { return nil }
         var index = lineIndex(forCursor: cursor)

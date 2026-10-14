@@ -2,18 +2,18 @@ import AppKit
 import Combine
 import SwiftUI
 
-/// Rahmenloses Fenster, das immer im Vordergrund bleibt und auf allen Desktops sichtbar ist.
+/// Borderless window that stays in front and is visible on all desktops.
 final class PrompterPanel: NSPanel {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
 }
 
-/// Lässt das Fenster an jeder Stelle des Inhalts verschieben.
+/// Lets the window be dragged from anywhere in its content.
 final class DraggableHostingView<Content: View>: NSHostingView<Content> {
     override var mouseDownCanMoveWindow: Bool { true }
 }
 
-/// Erzeugt und verwaltet das Prompter-Fenster: Position unter der Kamera, Größe, Tastatur.
+/// Creates and manages the prompter window: position below the camera, size, keyboard.
 @MainActor
 final class PrompterPanelController: NSObject, NSWindowDelegate {
     private unowned let model: AppModel
@@ -55,7 +55,7 @@ final class PrompterPanelController: NSObject, NSWindowDelegate {
         panel.isOpaque = false
         panel.hasShadow = true
         panel.isReleasedWhenClosed = false
-        // Bei Bildschirmaufnahmen unsichtbar, damit der Prompter nicht im Video landet.
+        // Invisible in screen recordings so the prompter does not end up in the video.
         panel.sharingType = .none
 
         let hostingView = DraggableHostingView(rootView: PrompterView().environmentObject(model))
@@ -66,7 +66,7 @@ final class PrompterPanelController: NSObject, NSWindowDelegate {
         updateSizeLimits(panel)
         panel.delegate = self
 
-        // Höhe folgt Schriftgröße und Zeilenzahl, die Oberkante bleibt dabei unter der Kamera.
+        // Height follows font size and line count; the top edge stays below the camera.
         Publishers.Merge3(
             model.$fontSize.dropFirst().map { _ in () },
             model.$linesBefore.dropFirst().map { _ in () },
@@ -84,7 +84,7 @@ final class PrompterPanelController: NSObject, NSWindowDelegate {
         return panel
     }
 
-    /// Gespeicherte Position oder oben mittig direkt unter der Menüleiste (also unter der Kamera).
+    /// Saved position, or top center right below the menu bar (i.e. below the camera).
     private func initialOrigin(for size: NSSize) -> NSPoint {
         if let stored = UserDefaults.standard.string(forKey: originKey) {
             let point = NSPointFromString(stored)
@@ -128,7 +128,7 @@ final class PrompterPanelController: NSObject, NSWindowDelegate {
         UserDefaults.standard.set(NSStringFromPoint(panel.frame.origin), forKey: originKey)
     }
 
-    // MARK: Tastatur
+    // MARK: Keyboard
 
     private func installKeyMonitor(for panel: NSPanel) {
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self, weak panel] event in
@@ -141,11 +141,11 @@ final class PrompterPanelController: NSObject, NSWindowDelegate {
         switch event.keyCode {
         case 53: // Esc
             model.stopPrompting()
-        case 49: // Leertaste
+        case 49: // Space
             model.togglePause()
-        case 125, 124: // Pfeil runter / rechts
+        case 125, 124: // Arrow down / right
             model.moveLines(1)
-        case 126, 123: // Pfeil hoch / links
+        case 126, 123: // Arrow up / left
             model.moveLines(-1)
         default:
             switch event.charactersIgnoringModifiers {

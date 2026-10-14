@@ -5,18 +5,18 @@ let package = Package(
     name: "Promptcript",
     platforms: [.macOS(.v26)],
     targets: [
-        // Plattformunabhängige Logik: Markdown-Parsing, Zeilenumbruch, Abgleich Sprache ↔ Skript.
+        // Platform-independent logic: Markdown parsing, line wrapping, matching speech ↔ script.
         .target(
             name: "PromptcriptCore",
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
-        // Die macOS-App (SwiftUI + AppKit + Spracherkennung).
+        // The macOS app (SwiftUI + AppKit + speech recognition).
         .executableTarget(
             name: "Promptcript",
             dependencies: ["PromptcriptCore"],
             swiftSettings: [.swiftLanguageMode(.v5)]
         ),
-        // Entwicklerwerkzeug: Audiodatei → SpeechAnalyzer → Abgleich, ohne Mikrofon.
+        // Developer tool: audio file → SpeechAnalyzer → matching, no microphone needed.
         .executableTarget(
             name: "PromptcriptBench",
             dependencies: ["PromptcriptCore"],

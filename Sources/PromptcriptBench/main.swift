@@ -3,14 +3,14 @@ import Foundation
 import PromptcriptCore
 import Speech
 
-// Entwicklerwerkzeug: Spielt eine Audiodatei durch SpeechAnalyzer und zeigt,
-// wie der Abgleich dem Skript folgt. So lässt sich die Fehlertoleranz ohne Mikrofon testen.
+// Developer tool: plays an audio file through SpeechAnalyzer and shows
+// how the matcher follows the script. This lets you test error tolerance without a microphone.
 //
-//   swift run PromptcriptBench <skript.md> <audio.aiff> [de-DE|en-US]
+//   swift run PromptcriptBench <script.md> <audio.aiff> [de-DE|en-US]
 
 let arguments = CommandLine.arguments
 guard arguments.count >= 3 else {
-    print("Aufruf: PromptcriptBench <skript.md> <audio> [de-DE|en-US]")
+    print("Usage: PromptcriptBench <script.md> <audio> [de-DE|en-US]")
     exit(1)
 }
 
@@ -29,7 +29,7 @@ func context(at cursor: Int) -> String {
 }
 
 guard let supported = await SpeechTranscriber.supportedLocale(equivalentTo: locale) else {
-    print("Sprache nicht unterstützt")
+    print("Language not supported")
     exit(1)
 }
 let transcriber = SpeechTranscriber(
@@ -39,7 +39,7 @@ let transcriber = SpeechTranscriber(
     attributeOptions: []
 )
 if let request = try await AssetInventory.assetInstallationRequest(supporting: [transcriber]) {
-    print("Lade Sprachmodell …")
+    print("Loading speech model …")
     try await request.downloadAndInstall()
 }
 
@@ -51,7 +51,7 @@ if !vocabulary.isEmpty {
     do {
         try await analyzer.setContext(analysisContext)
     } catch {
-        print("Hinweis: Vokabelhinweise nicht unterstützt (\(error.localizedDescription))")
+        print("Note: vocabulary hints not supported (\(error.localizedDescription))")
     }
 }
 
@@ -73,4 +73,4 @@ let file = try AVAudioFile(forReading: audioURL)
 try await analyzer.start(inputAudioFile: file, finishAfterFile: true)
 try await resultsTask.value
 
-print("\nErgebnis: \(matcher.cursor) von \(script.spokenWords.count) Wörtern erreicht.")
+print("\nResult: reached \(matcher.cursor) of \(script.spokenWords.count) words.")

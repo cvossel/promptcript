@@ -20,9 +20,9 @@ public enum BlockKind: Hashable, Sendable {
     }
 }
 
-/// Ein angezeigtes Wort (inkl. Satzzeichen) mit Formatierung.
-/// `spokenRange` verweist auf die normalisierten Wörter in `Script.spokenWords`;
-/// leer bei Überschriften, Aufzählungszeichen und reinen Satzzeichen.
+/// A displayed word (including punctuation) with formatting.
+/// `spokenRange` refers to the normalized words in `Script.spokenWords`;
+/// empty for headings, list markers and pure punctuation.
 public struct ScriptToken: Hashable, Sendable {
     public let text: String
     public let style: TokenStyle
@@ -40,16 +40,16 @@ public struct ScriptBlock: Hashable, Sendable {
     public let tokens: [ScriptToken]
 }
 
-/// Das geparste Skript: Blöcke zur Anzeige und die Liste der zu sprechenden Wörter.
+/// The parsed script: blocks for display and the list of words to be spoken.
 public struct Script: Sendable {
     public let blocks: [ScriptBlock]
     public let spokenWords: [String]
 
     public static let empty = Script(blocks: [], spokenWords: [])
 
-    /// Parst Markdown. Jede Zeile im Quelltext wird zu einem eigenen Absatz,
-    /// weil eingefügte Texte ihre Zeilenumbrüche meist bewusst setzen.
-    /// Überschriften werden angezeigt, aber nicht als gesprochener Text erwartet.
+    /// Parses Markdown. Every source line becomes its own paragraph,
+    /// because pasted texts usually place their line breaks deliberately.
+    /// Headings are displayed, but they are not expected to be spoken.
     public static func parse(_ markdown: String) -> Script {
         var blocks: [ScriptBlock] = []
         var spoken: [String] = []
@@ -92,8 +92,8 @@ public struct Script: Sendable {
         return Script(blocks: blocks, spokenWords: spoken)
     }
 
-    /// Wörter aus dem Skript, die der Spracherkennung als Vokabelhinweis mitgegeben werden.
-    /// Bevorzugt werden Fachbegriffe: Abkürzungen, CamelCase, Ziffern, englisch wirkende und lange Wörter.
+    /// Words from the script that are passed to speech recognition as vocabulary hints.
+    /// Technical terms are preferred: abbreviations, CamelCase, digits, English-looking and long words.
     public func contextualVocabulary(limit: Int = 100) -> [String] {
         var seen = Set<String>()
         var candidates: [(word: String, score: Int, order: Int)] = []
@@ -122,7 +122,7 @@ public struct Script: Sendable {
             .map(\.word)
     }
 
-    // MARK: - Parsing-Helfer
+    // MARK: - Parsing helpers
 
     private static func heading(_ line: String) -> (Int, String)? {
         let hashes = line.prefix(while: { $0 == "#" })

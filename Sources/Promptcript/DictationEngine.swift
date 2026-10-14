@@ -2,8 +2,8 @@ import AVFoundation
 import Foundation
 import Speech
 
-/// Klassische Spracherkennung über `SFSpeechRecognizer`.
-/// Alternative, falls SpeechAnalyzer Probleme macht. Unterstützt Vokabelhinweise zuverlässig.
+/// Classic speech recognition via `SFSpeechRecognizer`.
+/// Fallback in case SpeechAnalyzer causes problems. Supports vocabulary hints reliably.
 final class DictationEngine: SpeechEngine {
     var onEvent: ((SpeechEvent) -> Void)?
 
@@ -14,7 +14,7 @@ final class DictationEngine: SpeechEngine {
     private var request: SFSpeechAudioBufferRecognitionRequest?
     private var task: SFSpeechRecognitionTask?
     private var isStopped = false
-    /// Zählt Erkennungsaufgaben hoch, damit Rückmeldungen beendeter Aufgaben ignoriert werden.
+    /// Incremented per recognition task so that callbacks from finished tasks are ignored.
     private var generation = 0
 
     func start(locale: Locale, contextualStrings: [String]) async throws {
@@ -24,13 +24,13 @@ final class DictationEngine: SpeechEngine {
             SFSpeechRecognizer.requestAuthorization { continuation.resume(returning: $0) }
         }
         guard status == .authorized else {
-            throw SpeechEngineError(message: "Spracherkennung nicht erlaubt. Bitte in Systemeinstellungen → Datenschutz & Sicherheit → Spracherkennung erlauben.")
+            throw SpeechEngineError(message: "Speech recognition is not allowed. Please allow it in System Settings → Privacy & Security → Speech Recognition.")
         }
         guard let recognizer = SFSpeechRecognizer(locale: locale), recognizer.isAvailable else {
-            throw SpeechEngineError(message: "Die Spracherkennung für \(locale.identifier) ist gerade nicht verfügbar.")
+            throw SpeechEngineError(message: "Speech recognition for \(locale.identifier) is currently unavailable.")
         }
         self.recognizer = recognizer
-        // SFSpeechRecognizer verarbeitet nur eine begrenzte Zahl an Hinweisen sinnvoll.
+        // SFSpeechRecognizer only handles a limited number of hints well.
         self.contextualStrings = Array(contextualStrings.prefix(100))
 
         startRecognitionTask()
@@ -38,7 +38,7 @@ final class DictationEngine: SpeechEngine {
         let inputNode = audioEngine.inputNode
         let format = inputNode.outputFormat(forBus: 0)
         guard format.sampleRate > 0, format.channelCount > 0 else {
-            throw SpeechEngineError(message: "Kein Mikrofon gefunden.")
+            throw SpeechEngineError(message: "No microphone found.")
         }
         inputNode.removeTap(onBus: 0)
         inputNode.installTap(onBus: 0, bufferSize: 2048, format: format) { [weak self] buffer, _ in
@@ -52,8 +52,8 @@ final class DictationEngine: SpeechEngine {
         try audioEngine.start()
     }
 
-    /// Eine Erkennungsaufgabe endet nach einer Sprechpause oder ca. einer Minute.
-    /// Dann wird nahtlos eine neue gestartet.
+    /// A recognition task ends after a pause in speech or after about a minute.
+    /// A new one is then started seamlessly.
     private func startRecognitionTask() {
         guard !isStopped, let recognizer else { return }
         let request = SFSpeechAudioBufferRecognitionRequest()
@@ -84,7 +84,7 @@ final class DictationEngine: SpeechEngine {
                 self.onEvent?(.volatile(text))
             }
             if error != nil {
-                // Typisch: Zeitlimit oder „keine Sprache erkannt“ – einfach neu starten.
+                // Typically a time limit or "no speech detected" – just restart.
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     if self.isCurrent(taskGeneration) { self.startRecognitionTask() }
                 }
