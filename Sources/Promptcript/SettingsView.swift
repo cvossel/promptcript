@@ -28,6 +28,11 @@ struct SettingsView: View {
                 }
                 Toggle("Dim spoken words", isOn: $model.dimSpokenWords)
             }
+
+            Section("Recording") {
+                Toggle("Show prompter in screen recordings", isOn: $model.showInScreenRecordings)
+                    .help("Off: the prompter is hidden from screen recordings and screen sharing")
+            }
         }
         .formStyle(.grouped)
         .frame(width: 380)

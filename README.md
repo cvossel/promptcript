@@ -44,6 +44,8 @@ and remembers its position. Right-click opens a menu. The dot in the top right s
 (green = listening, yellow = loading/paused, red = error).
 
 The prompter is intentionally invisible in screen recordings, so it does not end up in your video.
+To show it anyway (e.g. for a demo or tutorial), enable **Show prompter in screen recordings**
+in Settings.
 
 ## How tracking works
 

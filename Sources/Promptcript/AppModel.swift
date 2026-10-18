@@ -69,6 +69,10 @@ final class AppModel: ObservableObject {
     @Published var linesAfter: Int {
         didSet { defaults.set(linesAfter, forKey: Keys.linesAfter) }
     }
+    /// Whether the prompter appears in screen recordings and screen sharing (off by default).
+    @Published var showInScreenRecordings: Bool {
+        didSet { defaults.set(showInScreenRecordings, forKey: Keys.showInRecordings) }
+    }
 
     static let contextLineRange = 0...8
 
@@ -101,6 +105,7 @@ final class AppModel: ObservableObject {
         static let dimSpoken = "dimSpokenWords"
         static let linesBefore = "linesBefore"
         static let linesAfter = "linesAfter"
+        static let showInRecordings = "showInScreenRecordings"
     }
 
     init() {
@@ -112,6 +117,7 @@ final class AppModel: ObservableObject {
         dimSpokenWords = defaults.object(forKey: Keys.dimSpoken) as? Bool ?? true
         linesBefore = Self.clampedContextLines(defaults.object(forKey: Keys.linesBefore) as? Int ?? 1)
         linesAfter = Self.clampedContextLines(defaults.object(forKey: Keys.linesAfter) as? Int ?? 1)
+        showInScreenRecordings = defaults.bool(forKey: Keys.showInRecordings)
     }
 
     // MARK: Layout

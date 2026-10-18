@@ -55,8 +55,8 @@ final class PrompterPanelController: NSObject, NSWindowDelegate {
         panel.isOpaque = false
         panel.hasShadow = true
         panel.isReleasedWhenClosed = false
-        // Invisible in screen recordings so the prompter does not end up in the video.
-        panel.sharingType = .none
+        // Invisible in screen recordings by default so the prompter does not end up in the video.
+        panel.sharingType = model.showInScreenRecordings ? .readOnly : .none
 
         let hostingView = DraggableHostingView(rootView: PrompterView().environmentObject(model))
         hostingView.sizingOptions = []
@@ -77,6 +77,13 @@ final class PrompterPanelController: NSObject, NSWindowDelegate {
                     guard let self, let panel else { return }
                     self.applyHeight(to: panel)
                 }
+            }
+            .store(in: &cancellables)
+
+        model.$showInScreenRecordings
+            .dropFirst()
+            .sink { [weak panel] show in
+                panel?.sharingType = show ? .readOnly : .none
             }
             .store(in: &cancellables)
 
