@@ -88,3 +88,7 @@ swift run PromptcriptBench script.md recording.aiff de-DE     # Run an audio fil
 Test recordings can be created with e.g. `say -v Samantha -o test.aiff "…"` (or `say -v Anna` for German).
 `PromptcriptBench` lets you check error tolerance without a microphone and tune the values in
 `ScriptMatcher.Configuration`.
+
+## Acknowledgements
+
+Built with [Claude Code](https://claude.com/claude-code), Anthropic's AI coding assistant.
