@@ -35,3 +35,7 @@ xcuserdata/
 *.m4a
 *.caf
 *.aiff
+
+# Screen recordings (e.g. raw footage for the demo GIF)
+*.mov
+*.mp4

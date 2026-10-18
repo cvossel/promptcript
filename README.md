@@ -7,6 +7,22 @@ plus a configurable number of lines above and below it (default: one each). Spee
   <img src="docs/demo.gif" alt="Promptcript following along as the script is read aloud" width="800">
 </p>
 
+## Requirements
+
+- **macOS 26 (Tahoe) or later.** The app uses Apple's `SpeechAnalyzer`, which is only available from macOS 26.
+- **Swift 6.2 or later**, from either of these:
+  - the **Xcode Command Line Tools** (enough to build and test): `xcode-select --install`
+  - or **Xcode 26** or later
+- A microphone. macOS asks for access on first launch.
+
+No third-party dependencies, nothing to install via Homebrew. Check your setup with:
+
+```bash
+swift --version
+```
+
+It should report Swift 6.2 or newer and a `macosx26` target.
+
 ## Build and run
 
 ```bash
@@ -16,8 +32,6 @@ plus a configurable number of lines above and below it (default: one each). Spee
 The app is then located at `build/Promptcript.app` and can be dragged into the Applications folder.
 On first launch, macOS asks for microphone access. The first time you press Play, the speech
 model is also loaded once.
-
-Requirements: macOS 26 and the Xcode Command Line Tools (`xcode-select --install`).
 
 ## Usage
 
