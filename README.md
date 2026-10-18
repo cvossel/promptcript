@@ -3,6 +3,10 @@
 A teleprompter for macOS that follows your voice. It shows the line you are currently reading,
 plus a configurable number of lines above and below it (default: one each). Speech recognition runs entirely on your Mac.
 
+<p align="center">
+  <img src="docs/demo.gif" alt="Promptcript following along as the script is read aloud" width="800">
+</p>
+
 ## Build and run
 
 ```bash
